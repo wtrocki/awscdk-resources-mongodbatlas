@@ -1,0 +1,36 @@
+name: Autoupdate PR 
+on:
+  workflow_dispatch:
+  schedule:
+   - cron: '30 8 * * *' ## Daily 8:30AM
+  
+jobs:
+  generate-client:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate
+        working-directory: ./tools
+        run: ./scripts/cdk_all.sh ## Runs all resources
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@efd71c265f4cde5b8034ff975235697e24384057
+        id: verify-changed-files
+        with:
+          files: |
+             **/atlas-api.yaml
+      - uses: peter-evans/create-pull-request@v6
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        with:
+          title: "Regenerated Source Code"
+          commit-message: "temp: client update"
+          delete-branch: true
+          draft: true
+          branch: dev-latest
+          body: |
+             Update for SDK
+
+            
+
+
+
